@@ -1,6 +1,9 @@
 # weather dataset
 data/
 
+# outputs
+output/
+
 # for macOS
 .DS_Store
 
