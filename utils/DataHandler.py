@@ -15,7 +15,7 @@ class DataHandler:
 
     def __init__(self, path):
         self.path = os.path.join(f"./data/{path}", "")
-        self.dataframe = pd.read_csv(path)
+        self.dataframe = pd.read_csv(path, parse_dates=["dt"])
 
     @property
     def export_data(self):
@@ -28,3 +28,8 @@ class DataHandler:
         print(self.dataframe.describe())
         print("Check amount of null values for each feature")
         print(self.dataframe.isnull().sum())
+
+    def clean(self, feature):
+        self.dataframe = self.dataframe.dropna(subset=feature)
+        # restore indexes
+        self.dataframe = self.dataframe.reset_index(drop=True)
