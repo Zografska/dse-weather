@@ -38,7 +38,7 @@ temperature_by_city_data.clean(feature="City")
 # ].sort_values("dt")
 # print(china_city.tail(10))
 
-print(temperature_by_city_data.dataframe["City"].unique().__len__())
+# print(temperature_by_city_data.dataframe["City"].unique().__len__())
 
 # transform the data
 temperature_by_city_data.dataframe["Latitude"] = temperature_by_city_data.dataframe[
@@ -58,14 +58,15 @@ starting_point = (
 )
 
 
-starting_location = starting_point.loc[0, ["Latitude", "Longitude"]]
+starting_location = starting_point.loc[0, ["Latitude", "Longitude", "City"]]
 
 # print(starting_location)
 grouped = temperature_by_city_data.dataframe.groupby(
     temperature_by_city_data.dataframe["dt"]
 )["City"]
 
-print(grouped.nunique())
+# print(grouped.nunique())
+
 
 # counting the unique cities
 # grouping the data by date and filtering on unique 'city' values
@@ -96,19 +97,49 @@ queue = []
 #     ),
 # )
 
-# def getNeighbours(dataset, location, )
 
-travel_dataset["distance"] = travel_dataset.apply(
-    lambda row: calculateDistance(
-        row["Latitude"],
-        row["Longitude"],
-        starting_location["Latitude"],
-        starting_location["Longitude"],
-    ),
-    axis=1,
-)
-travel_dataset = travel_dataset.sort_values(by="distance", ascending=True)
-print(travel_dataset.head(3))
+# get first tree closest
+def get_neighbours(dataset, location):
+    dataset = dataset.copy()
+    dataset["distance"] = dataset.apply(
+        lambda row: calculateDistance(
+            row["Latitude"],
+            row["Longitude"],
+            location["Latitude"],
+            location["Longitude"],
+        ),
+        axis=1,
+    )
+
+    destination = dataset[
+        (dataset["City"] == "Los Angeles") & (dataset["distance"] == 0)
+    ]
+    if destination.__len__():
+        return [destination, "arrived"]
+
+    dataset = dataset[
+        (dataset["City"] != location["City"]) & (dataset["distance"] != 0)
+    ]
+
+    dataset = dataset.sort_values(
+        by=["distance", "AverageTemperature"], ascending=[True, False]
+    ).reset_index()
+
+    return [dataset, "travelling"]
+
+
+path = []
+travel_dataset["Visited"] = "No"
+[neighbours, status] = get_neighbours(travel_dataset, starting_location)
+
+while status == "travelling":
+    to_visit = neighbours.loc[neighbours["Visited"] == "No"].iloc[0]
+    path.append(to_visit)
+    print(to_visit["City"])
+    travel_dataset.loc[travel_dataset["City"] == to_visit["City"], "Visited"] = "Yes"
+    [neighbours, status] = get_neighbours(travel_dataset, to_visit)
+
+print(path.__len__())
 
 
 # print(three_closest.head(3))
