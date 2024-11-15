@@ -1,4 +1,5 @@
 import os
+import string
 
 import pandas as pd
 from math import atan2, radians, sin, cos, acos, sqrt
@@ -80,10 +81,6 @@ travel_dataset = travel_dataset[mask]
 # print(travel_dataset)
 # starting_location = [float(x[:-1]) for x in starting_location_raw]
 
-
-visited = []
-queue = []
-
 # ne raboti
 # three_closest = travel_dataset.sort_values(
 #     by=["Latitude", "Longitude"],
@@ -125,19 +122,52 @@ def get_neighbours(dataset, location):
         by=["distance", "AverageTemperature"], ascending=[True, False]
     ).reset_index()
 
-    return [dataset, "travelling"]
+    return [dataset.head(10), "travelling"]
 
 
 path = []
-travel_dataset["Visited"] = "No"
+# travel_dataset["Visited"] = "No"
 [neighbours, status] = get_neighbours(travel_dataset, starting_location)
 
-while status == "travelling":
-    to_visit = neighbours.loc[neighbours["Visited"] == "No"].iloc[0]
-    path.append(to_visit)
-    print(to_visit["City"])
-    travel_dataset.loc[travel_dataset["City"] == to_visit["City"], "Visited"] = "Yes"
-    [neighbours, status] = get_neighbours(travel_dataset, to_visit)
+
+visited = []
+queue = []
+
+
+## find path to destination bfs
+def bfs(visited, travel_dataset, node):
+    visited.append(node["City"])
+    queue.append([node, [node["City"]], []])
+
+    while queue:
+        [current, path, visited] = queue.pop(0)
+        # visited = visited + [current["City"]]
+        [neighbours, status] = get_neighbours(travel_dataset, current)
+        # print(current["City"])
+        print(
+            f"i am travelling from {current['City']}, already passed {','.join(visited)} cities"
+        )
+        if status == "arrived":
+            print(neighbours)
+            print(path)
+            print(visited)
+            break
+
+        for _, neighbour in neighbours.iterrows():
+            if neighbour["City"] not in path:
+                city_name = current["City"]
+                queue.append([neighbour, path + [city_name], visited + [city_name]])
+
+
+bfs(visited, travel_dataset, starting_location)
+
+
+# while status == "travelling":
+#     to_visit = neighbours.loc[neighbours["Visited"] == "No"].iloc[0]
+#     path.append(to_visit)
+#     print(to_visit["City"])
+#     travel_dataset.loc[travel_dataset["City"] == to_visit["City"], "Visited"] = "Yes"
+#     [neighbours, status] = get_neighbours(travel_dataset, to_visit)
 
 print(path.__len__())
 
