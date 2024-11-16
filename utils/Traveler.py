@@ -142,8 +142,19 @@ path = bfs(travel_dataset, starting_point)
 # Filter the DataFrame to include only the cities in the 'path' list
 filtered_cities = travel_dataset[travel_dataset["City"].isin(path)]
 
+# Append the goal to the DataFrame
+filtered_cities = filtered_cities._append(goal)
+path.append("Los Angeles")
+
 # Sort the DataFrame by the order of cities in the 'path' list
 filtered_cities = filtered_cities.set_index("City").loc[path].reset_index()
-filtered_cities.to_csv("./output/result.csv", index=False)
 
+# Add new columns with the Latitude and Longitude of the previous row
+filtered_cities["Prev_Latitude"] = filtered_cities["Latitude"].shift(-1)
+filtered_cities["Prev_Longitude"] = filtered_cities["Longitude"].shift(-1)
+
+# We don't need the last row anymore
+# filtered_cities = filtered_cities[:-1]
+
+filtered_cities.to_csv("./output/result.csv", index=False)
 print(f"Path to Los Angeles is {path}")

@@ -3,25 +3,46 @@ import pandas as pd
 import pydeck as pdk
 
 
-from urllib.error import URLError
-
-
 def traveler_demo():
     @st.cache_data
-    def from_data_file():
+    def from_data_file(drop_last_column=False):
         url = "../output/result.csv"
-        return pd.read_csv(url)
+        dataset = pd.read_csv(url)
+        if drop_last_column:
+            return dataset[:-1]
+        return dataset
 
     try:
         ALL_LAYERS = {
             "City Names": pdk.Layer(
                 "TextLayer",
-                data=from_data_file(),
+                data=from_data_file(drop_last_column=True),
                 get_position=["Longitude", "Latitude"],
                 get_text="City",
                 get_color=[0, 255, 255, 200],
                 get_size=13,
                 get_alignment_baseline="'bottom'",
+            ),
+            "Travel Path": pdk.Layer(
+                "ArcLayer",
+                data=from_data_file(drop_last_column=True),
+                get_source_position=["Longitude", "Latitude"],
+                get_target_position=["Prev_Longitude", "Prev_Latitude"],
+                get_source_color=[246, 204, 0, 80],
+                get_target_color=[200, 30, 0, 160],
+                auto_highlight=True,
+                width_scale=0.0002,
+                get_width="outbound",
+                width_min_pixels=3,
+                width_max_pixels=30,
+            ),
+            "Southern Limit": pdk.Layer(
+                "LineLayer",
+                data=[{"source": [180, 33.5], "target": [-180, 33.5]}],
+                get_source_position="source",
+                get_target_position="target",
+                get_color=[255, 0, 0],
+                get_width=1,
             ),
         }
         st.sidebar.markdown("### Map Layers")
@@ -76,6 +97,9 @@ st.write(
         To speed up the processing I used the BFS algorithm combined with a heuristic
         which pruned the nodes where the cities had a distance further from the goal
         compared to the current state.
+        Additionally I forbid the traveler to go to the previously visited city and
+        limited the traveler to not go below the 33.5 latitude hence 
+        the `Southern Limit` marker.
 
         Hence I have arrived to this path:
     """
