@@ -81,7 +81,7 @@ starting_point = (
 )
 
 
-starting_location = starting_point.loc[0, ["Latitude", "Longitude", "City"]]
+starting_location = starting_point.loc[0, ["Latitude", "Longitude", "City", "Country"]]
 
 # print(starting_location)
 grouped = temperature_by_city_data.dataframe.groupby(
@@ -130,11 +130,16 @@ def get_neighbours(dataset, location):
         axis=1,
     )
 
-    destination = dataset[
-        (dataset["City"] == "Los Angeles") & (dataset["distance"] == 0)
-    ]
-    if destination.__len__():
-        return [destination, "arrived"]
+    # destination = dataset[
+    #     (dataset["City"] == "Los Angeles") & (dataset["distance"] == 0)
+    # ]
+    # if destination.__len__():
+    #     return [destination, "arrived"]
+
+    if location["Country"] == "United States":
+        destination = dataset[(dataset["Country"] == "United States")]
+        if destination.__len__():
+            return [destination, "arrived"]
 
     dataset = dataset[
         (dataset["City"] != location["City"]) & (dataset["distance"] != 0)
@@ -166,10 +171,16 @@ def bfs(visited, travel_dataset, node):
         # visited = visited + [current["City"]]
         [neighbours, status] = get_neighbours(travel_dataset, current)
         # print(current["City"])
+        if current["Country"] == "United States":
+            print(f"I stepped in the US in city {current['City']}")
+            print(neighbours)
+            queue.clear()
+            break
+
         print(
             f"i am travelling from {current['City']}, already passed {','.join(visited)} cities"
         )
-        if status == "arrived":
+        if current["City"] == "Los Angeles":
             print(neighbours)
             print(path)
             print(visited)
