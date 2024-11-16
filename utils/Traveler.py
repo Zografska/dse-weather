@@ -7,6 +7,26 @@ from math import atan2, radians, sin, cos, acos, sqrt
 import DataHandler as dh
 
 
+def transform_latitude(latitude):
+    if not latitude:
+        return None
+    if latitude[-1] == "S":
+        latitude = float(latitude[:-1]) * -1
+    else:
+        latitude = float(latitude[:-1])
+    return latitude
+
+
+def transform_longitude(longitude):
+    if not longitude:
+        return None
+    if longitude[-1] == "W":
+        longitude = float(longitude[:-1]) * -1
+    else:
+        longitude = float(longitude[:-1])
+    return longitude
+
+
 def calculateDistance(lat_x, lon_x, lat_y, lon_y):
     lat1 = radians(lat_x)
     lon1 = radians(lon_x)
@@ -30,6 +50,8 @@ class Traveler:
 
 
 temperature_by_city_data = dh.DataHandler("./data/GlobalLandTemperaturesByCity.csv")
+temperature_by_city_data.clean(feature="Latitude")
+temperature_by_city_data.clean(feature="Longitude")
 traveler = Traveler("Peking")
 # temperature_by_city_data.clean(feature="AverageTemperature")
 temperature_by_city_data.clean(feature="City")
@@ -44,10 +66,10 @@ temperature_by_city_data.clean(feature="City")
 # transform the data
 temperature_by_city_data.dataframe["Latitude"] = temperature_by_city_data.dataframe[
     "Latitude"
-].transform(lambda x: float(x[:-1]))
+].transform(lambda x: transform_latitude(x))
 temperature_by_city_data.dataframe["Longitude"] = temperature_by_city_data.dataframe[
     "Longitude"
-].transform(lambda x: float(x[:-1]))
+].transform(lambda x: transform_longitude(x))
 
 
 starting_point = (
