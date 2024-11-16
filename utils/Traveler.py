@@ -1,47 +1,5 @@
-import os
-import string
-import numpy as np
-
-import pandas as pd
-from math import atan2, radians, sin, cos, acos, sqrt
-
 import DataHandler as dh
-
-
-def transform_latitude(latitude):
-    if not latitude:
-        return None
-    if latitude[-1] == "S":
-        latitude = float(latitude[:-1]) * -1
-    else:
-        latitude = float(latitude[:-1])
-    return latitude
-
-
-def transform_longitude(longitude):
-    if not longitude:
-        return None
-    if longitude[-1] == "W":
-        longitude = float(longitude[:-1]) * -1
-    else:
-        longitude = float(longitude[:-1])
-    return longitude
-
-
-def calculateDistance(lat_x, lon_x, lat_y, lon_y):
-    lat1 = radians(lat_x)
-    lon1 = radians(lon_x)
-    lat2 = radians(lat_y)
-    lon2 = radians(lon_y)
-    R = 6371.01
-    dlon = lon2 - lon1
-    dlat = lat2 - lat1
-
-    a = sin(dlat / 2) ** 2 + cos(lat1) * cos(lat2) * sin(dlon / 2) ** 2
-    c = 2 * atan2(sqrt(a), sqrt(1 - a))
-
-    distance = R * c
-    return distance
+from Location import calculateDistance, transform_latitude, transform_longitude
 
 
 class Traveler:
