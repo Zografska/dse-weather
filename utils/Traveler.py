@@ -114,7 +114,7 @@ def get_neighbours(dataset, location, goal):
 def bfs(travel_dataset, node):
     path = []
     queue = []
-    queue.append([node, [node["City"]]])
+    queue.append([node, []])
     closest = node["distance_to_goal"]
 
     while queue:
@@ -122,25 +122,14 @@ def bfs(travel_dataset, node):
         neighbours = get_neighbours(travel_dataset, current, goal)
 
         if current["City"] == "Los Angeles":
-            print(neighbours)
-            print(path)
             return path
 
         if current["distance_to_goal"] < closest:
             closest = current["distance_to_goal"]
             queue = [node for node in queue if node[0]["distance_to_goal"] <= closest]
-            print(
-                f"closest is {current['City']} with distance {current['distance_to_goal']}"
-            )
 
         if current["Country"] == "United States":
-            print(f"I stepped in the US in city {current['City']}")
-            print(neighbours)
             queue = [node for node in queue if node[0]["Country"] == "United States"]
-
-        print(
-            f"i am travelling from {current['City']}, already passed {','.join(path)} cities, distance to goal is {current['distance_to_goal']}"
-        )
 
         for _, neighbour in neighbours.iterrows():
             if neighbour["City"] not in path:
@@ -149,4 +138,12 @@ def bfs(travel_dataset, node):
 
 
 path = bfs(travel_dataset, starting_point)
+
+# Filter the DataFrame to include only the cities in the 'path' list
+filtered_cities = travel_dataset[travel_dataset["City"].isin(path)]
+
+# Sort the DataFrame by the order of cities in the 'path' list
+filtered_cities = filtered_cities.set_index("City").loc[path].reset_index()
+filtered_cities.to_csv("./output/result.csv", index=False)
+
 print(f"Path to Los Angeles is {path}")
