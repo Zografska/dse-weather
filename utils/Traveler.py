@@ -1,5 +1,6 @@
 import os
 import string
+import numpy as np
 
 import pandas as pd
 from math import atan2, radians, sin, cos, acos, sqrt
@@ -71,6 +72,25 @@ temperature_by_city_data.dataframe["Longitude"] = temperature_by_city_data.dataf
     "Longitude"
 ].transform(lambda x: transform_longitude(x))
 
+goal = (
+    temperature_by_city_data.dataframe.where(
+        temperature_by_city_data.dataframe["City"] == "Los Angeles"
+    )
+    .dropna()
+    .reset_index()
+).iloc[0]
+
+temperature_by_city_data.dataframe["distance_to_goal"] = (
+    temperature_by_city_data.dataframe.apply(
+        lambda row: calculateDistance(
+            row["Latitude"],
+            row["Longitude"],
+            goal["Latitude"],
+            goal["Longitude"],
+        ),
+        axis=1,
+    )
+)
 
 starting_point = (
     temperature_by_city_data.dataframe.where(
@@ -81,7 +101,7 @@ starting_point = (
 )
 
 
-starting_location = starting_point.loc[0, ["Latitude", "Longitude", "City", "Country"]]
+starting_location = starting_point.iloc[0]
 
 # print(starting_location)
 grouped = temperature_by_city_data.dataframe.groupby(
@@ -97,7 +117,9 @@ grouped = temperature_by_city_data.dataframe.groupby(
 # as number of unique cities
 # so we can choose that year as our travel year
 
+
 travel_dataset = temperature_by_city_data.dataframe
+
 mask = travel_dataset["dt"] == "2013-08-01"
 travel_dataset = travel_dataset[mask]
 # print(travel_dataset)
@@ -130,6 +152,16 @@ def get_neighbours(dataset, location):
         axis=1,
     )
 
+    dataset["distance_to_goal"] = dataset.apply(
+        lambda row: calculateDistance(
+            row["Latitude"],
+            row["Longitude"],
+            goal["Latitude"],
+            goal["Longitude"],
+        ),
+        axis=1,
+    )
+
     # destination = dataset[
     #     (dataset["City"] == "Los Angeles") & (dataset["distance"] == 0)
     # ]
@@ -144,47 +176,58 @@ def get_neighbours(dataset, location):
     dataset = dataset[
         (dataset["City"] != location["City"]) & (dataset["distance"] != 0)
     ]
+    # force to go east
+    # dataset["TransformedLongitude"] = np.where(
+    #     dataset["Longitude"] > 0, dataset["Longitude"], -dataset["Longitude"]
+    # )
+    # dataset = dataset[dataset["Longitude"] > 0]
+    dataset = dataset[dataset["Latitude"] > 33.5]
+    dataset = dataset[dataset["distance_to_goal"] < location["distance_to_goal"]]
 
     dataset = dataset.sort_values(
-        by=["distance", "AverageTemperature"], ascending=[True, False]
+        by=["distance", "distance_to_goal", "AverageTemperature"],
+        ascending=[True, True, False],
     ).reset_index()
 
-    return [dataset.head(10), "travelling"]
+    return [dataset.head(5), "travelling"]
 
 
-path = []
 # travel_dataset["Visited"] = "No"
 [neighbours, status] = get_neighbours(travel_dataset, starting_location)
 
 
-visited = []
-queue = []
-
-
 ## find path to destination bfs
-def bfs(visited, travel_dataset, node):
+def bfs(travel_dataset, node):
+    visited = []
     visited.append(node["City"])
+    path = []
+    queue = []
     queue.append([node, [node["City"]], []])
+    closest = node["distance_to_goal"]
 
     while queue:
         [current, path, visited] = queue.pop(0)
-        # visited = visited + [current["City"]]
         [neighbours, status] = get_neighbours(travel_dataset, current)
-        # print(current["City"])
+        if current["distance_to_goal"] < closest:
+            closest = current["distance_to_goal"]
+            queue = [node for node in queue if node[0]["distance_to_goal"] <= closest]
+            print(
+                f"closest is {current['City']} with distance {current['distance_to_goal']}"
+            )
+
         if current["Country"] == "United States":
             print(f"I stepped in the US in city {current['City']}")
             print(neighbours)
             queue.clear()
-            break
 
         print(
-            f"i am travelling from {current['City']}, already passed {','.join(visited)} cities"
+            f"i am travelling from {current['City']}, already passed {','.join(visited)} cities, distance to goal is {current['distance_to_goal']}"
         )
         if current["City"] == "Los Angeles":
             print(neighbours)
             print(path)
             print(visited)
-            break
+            return path
 
         for _, neighbour in neighbours.iterrows():
             if neighbour["City"] not in path:
@@ -192,17 +235,5 @@ def bfs(visited, travel_dataset, node):
                 queue.append([neighbour, path + [city_name], visited + [city_name]])
 
 
-bfs(visited, travel_dataset, starting_location)
-
-
-# while status == "travelling":
-#     to_visit = neighbours.loc[neighbours["Visited"] == "No"].iloc[0]
-#     path.append(to_visit)
-#     print(to_visit["City"])
-#     travel_dataset.loc[travel_dataset["City"] == to_visit["City"], "Visited"] = "Yes"
-#     [neighbours, status] = get_neighbours(travel_dataset, to_visit)
-
-print(path.__len__())
-
-
-# print(three_closest.head(3))
+path = bfs(travel_dataset, starting_location)
+print(f"Path to Los Angeles is {path}")
