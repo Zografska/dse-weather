@@ -28,11 +28,11 @@ streamlit run Welcome_Page.py
 ### Project Tasks
 
 - [x] **1. Usage of GitHub**
-- [ ] **2. Correct Modularisation**
+- [x] **2. Correct Modularisation**
 - [x] **3. Import and Output of Data**
 - [x] **4. Usage of a Data Manipulation Library** (e.g., `pandas`)
-- [ ] **5. Usage of a Scientific Computing Library** (e.g., `numpy`)
-- [ ] **6. Usage of a Data Visualization Library** (e.g., `matplotlib`)
+- [x] **5. Usage of a Scientific Computing Library** (e.g., `sklearn`)
+- [x] **6. Usage of a Data Visualization Library** (e.g., `matplotlib`)
 - [x] **7. BONUS** - Usage of a Web App Creation Framework (e.g., [Streamlit](https://streamlit.io/))
 
 ---
