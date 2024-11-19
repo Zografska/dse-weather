@@ -24,10 +24,19 @@ st.write(
 )
 data = from_data_file()
 
-column_values = data.sort_values("dt", ascending=False)["dt"].unique()
-selected_day = st.sidebar.selectbox("Select a day", column_values)
+data["dt"] = pd.to_datetime(data["dt"])
 
-filtered_data = filterdata(data, selected_day)
+filtered_dates = data[data["dt"].dt.strftime("%m").str.contains(r"^(01|08)$")][
+    "dt"
+].unique()
+
+# show the data in descending order
+column_values = sorted(filtered_dates, reverse=True)
+selected_month = st.sidebar.selectbox(
+    "Select a month", column_values, format_func=lambda x: x.strftime("%B %Y")
+)
+
+filtered_data = filterdata(data, selected_month)
 filtered_data = filtered_data.dropna(subset=["AverageTemperature", "Country"])
 
 fig, ax = plt.subplots()
@@ -35,7 +44,10 @@ ax.hist(
     filtered_data["AverageTemperature"], bins=30, color="skyblue", edgecolor="black"
 )
 
-ax.set_title(f"Average Temperature Distribution on {selected_day}", fontsize=16)
+ax.set_title(
+    f"Average Temperature Distribution on {selected_month.strftime("%B %Y")}",
+    fontsize=16,
+)
 ax.set_xlabel("Average Temperature (°C)", fontsize=14)
 ax.set_ylabel("Frequency", fontsize=14)
 
@@ -66,7 +78,10 @@ sns.scatterplot(
     markers="h",
 )
 
-ax.set_title(f"Average Temperature by Country on {selected_day}", fontsize=20)
+
+ax.set_title(
+    f"Average Temperature by Country on {selected_month.strftime("%B %Y")}", fontsize=20
+)
 ax.set_xlabel("Average Temperature Uncertainty (°C)", fontsize=16)
 ax.set_ylabel("Average Temperature (°C)", fontsize=16)
 
