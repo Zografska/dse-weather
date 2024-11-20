@@ -13,15 +13,12 @@ class DataHandler:
         A path pointing to the file with data.
     """
 
-    def __init__(self, path):
-        self.path = os.path.join(f"./data/{path}", "")
-        self.dataframe = pd.read_csv(path, parse_dates=["dt"])
+    def __init__(self, path, distance_from_root=0):
+        self.prefix = "../" * distance_from_root
 
-    @property
-    def export_data(self):
-        self.dataframe.to_csv(f"./output/{self.path}_output.csv")
+        self.path = os.path.join(f"{self.prefix}./data/{path}", "")
+        self.dataframe = pd.read_csv(path)
 
-    @property
     def explore(self):
         print("General Info")
         self.dataframe.info()

@@ -25,6 +25,9 @@ from Location import calculateDistance, transform_latitude, transform_longitude
 
 
 temperature_by_city_data = dh.DataHandler("./data/GlobalLandTemperaturesByCity.csv")
+
+temperature_by_city_data.explore()
+
 temperature_by_city_data.clean(feature="Latitude")
 temperature_by_city_data.clean(feature="Longitude")
 temperature_by_city_data.clean(feature="City")
