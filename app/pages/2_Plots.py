@@ -1,14 +1,21 @@
+import os
+import sys
 import matplotlib.pyplot as plt
 import pandas as pd
 import streamlit as st
 import seaborn as sns
 
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
+from utils import DataHandler as dh
+
 
 @st.cache_data
 def from_data_file():
-    url = "../data/GlobalLandTemperaturesByCountry.csv"
-    dataset = pd.read_csv(url)
-    return dataset
+    data_handler = dh.DataHandler("../data/GlobalLandTemperaturesByCountry.csv")
+    data_handler.clean("AverageTemperature")
+    data_handler.clean("Country")
+    data_handler.clean("dt")
+    return data_handler.dataframe
 
 
 @st.cache_data
@@ -18,12 +25,10 @@ def filterdata(df, selected_date):
 
 st.set_page_config(page_title="Change of Temperature over Time", page_icon="📈")
 st.markdown("# Change of Temperature over Time")
-st.sidebar.header("Change of Temperature over Time")
 st.write(
     """This plot let's you explore the distribution of average temperature over time."""
 )
 data = from_data_file()
-
 data["dt"] = pd.to_datetime(data["dt"])
 
 filtered_dates = data[data["dt"].dt.strftime("%m").str.contains(r"^(01|08)$")][
@@ -37,7 +42,6 @@ selected_month = st.sidebar.selectbox(
 )
 
 filtered_data = filterdata(data, selected_month)
-filtered_data = filtered_data.dropna(subset=["AverageTemperature", "Country"])
 
 fig, ax = plt.subplots()
 ax.hist(
@@ -72,7 +76,6 @@ sns.scatterplot(
     palette="tab10",
     ax=ax,
     s=200,
-    alpha=0.9,
     edgecolor="black",
     linewidth=0.8,
     markers="h",
