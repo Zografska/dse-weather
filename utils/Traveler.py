@@ -1,17 +1,32 @@
+"""
+Traveler Script
+
+This script processes geographical temperature data and calculates distances to a specific goal location.
+It performs the following steps:
+1. Loads and cleans temperature data by city.
+2. Transforms latitude and longitude values to a standardized format.
+3. Filters the data for a specific date of travel.
+4. Finds the goal location (Los Angeles, United States) within the dataset.
+5. Outputs the path to Los Angeles from a starting point (Peking) based on a shortest-distance heuristic.
+
+Usage:
+    python Traveler.py [date_of_travel]
+
+Arguments:
+    date_of_travel (optional): The date of travel in the format 'YYYY-MM-DD'. If not provided, defaults to '2013-08-01'.
+
+Example:
+    python Traveler.py 2013-08-01
+"""
+
+import sys
 import DataHandler as dh
 from Location import calculateDistance, transform_latitude, transform_longitude
-
-
-class Traveler:
-    def __init__(self, starting_city):
-        self.start = starting_city
-        self.current_position = starting_city
 
 
 temperature_by_city_data = dh.DataHandler("./data/GlobalLandTemperaturesByCity.csv")
 temperature_by_city_data.clean(feature="Latitude")
 temperature_by_city_data.clean(feature="Longitude")
-traveler = Traveler("Peking")
 temperature_by_city_data.clean(feature="City")
 
 # transform the data
@@ -22,7 +37,7 @@ temperature_by_city_data.dataframe["Longitude"] = temperature_by_city_data.dataf
     "Longitude"
 ].transform(lambda x: transform_longitude(x))
 
-date_of_travel = "2013-08-01"
+date_of_travel = sys.argv[1] if len(sys.argv) == 2 else "2013-08-01"
 
 travel_dataset = temperature_by_city_data.dataframe.copy()
 # get data for the date of travel
@@ -110,7 +125,7 @@ def get_neighbours(dataset, location, goal):
     return dataset.head(3)
 
 
-## find path to destination bfs
+# Use breadth-first search to find the path to the goal
 def bfs(travel_dataset, node):
     path = []
     queue = []
@@ -124,10 +139,13 @@ def bfs(travel_dataset, node):
         if current["City"] == "Los Angeles":
             return path
 
+        # When we find a new closest city discard all other cities
+        # (assumption that we're moving in the right direction)
         if current["distance_to_goal"] < closest:
             closest = current["distance_to_goal"]
             queue = [node for node in queue if node[0]["distance_to_goal"] <= closest]
 
+        # When we step in the US discard all other countries
         if current["Country"] == "United States":
             queue = [node for node in queue if node[0]["Country"] == "United States"]
 
@@ -152,9 +170,6 @@ filtered_cities = filtered_cities.set_index("City").loc[path].reset_index()
 # Add new columns with the Latitude and Longitude of the previous row
 filtered_cities["Prev_Latitude"] = filtered_cities["Latitude"].shift(-1)
 filtered_cities["Prev_Longitude"] = filtered_cities["Longitude"].shift(-1)
-
-# We don't need the last row anymore
-# filtered_cities = filtered_cities[:-1]
 
 filtered_cities.to_csv("./output/result.csv", index=False)
 print(f"Path to Los Angeles is {path}")
