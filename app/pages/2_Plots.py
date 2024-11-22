@@ -48,6 +48,7 @@ selected_month = st.sidebar.selectbox(
     "Select a month", column_values, format_func=lambda x: x.strftime("%B %Y")
 )
 
+st.write(selected_month)
 filtered_data = filterdata(data, selected_month)
 st.write("First let's get an overview of the data:")
 st.write(
@@ -85,9 +86,7 @@ st.pyplot(plt)
 plt.close()
 
 
-st.subheader(
-    "Relationship between Average Temperature and Average Temperature Uncertainty"
-)
+st.subheader("Comparison of average temperature between countries now and X years ago")
 
 countries = st.multiselect(
     "Choose countries",
@@ -95,19 +94,21 @@ countries = st.multiselect(
     ["Cuba", "United States", "Mexico", "Costa Rica"],
 )
 
-plot_data = filtered_data[filtered_data["Country"].isin(countries)]
+years_ago = st.slider("Go back in time X years", 10, 100, 10)
+history_month = selected_month - pd.DateOffset(years=years_ago)
+
+plot_data = data[
+    (data["Country"].isin(countries))
+    & ((data["dt"] == history_month) | (data["dt"] == selected_month))
+]
 
 # Create a scatter plot
-sns.scatterplot(
+sns.catplot(
     data=plot_data,
-    x="AverageTemperatureUncertainty",
+    x="dt",
     y="AverageTemperature",
     hue="Country",
-    palette="tab10",
-    s=200,
-    edgecolor="black",
-    linewidth=0.8,
-    markers="h",
+    kind="bar",
 )
 
 
@@ -118,7 +119,5 @@ plt.xlabel("Average Temperature Uncertainty (°C)", fontsize=14)
 plt.ylabel("Average Temperature (°C)", fontsize=14)
 
 plt.grid(True, linestyle="--", alpha=0.6)
-
-plt.legend(title="Country", title_fontsize="12", fontsize="10", loc="upper right")
 
 st.pyplot(plt)
