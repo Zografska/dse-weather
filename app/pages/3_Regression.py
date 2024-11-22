@@ -20,11 +20,6 @@ def from_data_file():
     return data_handler.dataframe
 
 
-@st.cache_data
-def filterdata(df, selected_date):
-    return df[df["dt"] == selected_date]
-
-
 def get_data_for_country(data, country):
     data_country = data[data["Country"] == country][["dt", "AverageTemperature"]]
     variable_name = f"AverageTemperature_{country}"
@@ -82,6 +77,4 @@ plt.grid(True, linestyle="--", alpha=0.6)
 # Customize the legend
 plt.legend(title="Legend", title_fontsize="13", fontsize="11", loc="upper left")
 
-# Hack: https://stackoverflow.com/questions/56656777/userwarning-matplotlib-is-currently-using-agg-which-is-a-non-gui-backend-so
-plt.savefig("image-results/regression.png")
-st.image("image-results/regression.png")
+st.pyplot(plt)

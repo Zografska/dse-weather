@@ -3,7 +3,6 @@ data/
 
 # outputs
 output/
-app/image-results/
 
 # for macOS
 .DS_Store
