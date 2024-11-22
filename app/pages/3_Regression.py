@@ -25,40 +25,41 @@ def filterdata(df, selected_date):
     return df[df["dt"] == selected_date]
 
 
+def get_data_for_country(data, country):
+    data_country = data[data["Country"] == country][["dt", "AverageTemperature"]]
+    variable_name = f"AverageTemperature_{country}"
+    data_country = data_country.rename(columns={"AverageTemperature": variable_name})
+    return data_country, variable_name
+
+
 st.set_page_config(page_title="Linear Regression", page_icon="📈")
 st.markdown("# Linear Regression")
-st.write("""Please select distributions""")
+st.write(
+    """Here you can check out the linear regression between two countries' average temperatures."""
+)
 data = from_data_file()
 
-countries = st.multiselect(
-    "Choose countries",
-    list(data["Country"].unique()),
-    ["Italy", "Spain"],
+list_of_countries = data["Country"].unique()
+
+country_x = st.sidebar.selectbox(
+    label="Select the first country", options=list_of_countries, index=110
+)
+country_y = st.sidebar.selectbox(
+    label="Select the other country", options=list_of_countries, index=131
 )
 
-# country_data = data.copy()
-# for country in countries:
-#     country_df = data[data["Country"] == country][["dt", "AverageTemperature"]]
-#     country_df = country_df.rename(columns={"AverageTemperature": f"AverageTemperature_{country}"})
-#     pd.merge(country_data, country_df, on="dt", how="left")
+test_size = st.sidebar.slider("Test Set Size (%)", 0, 100, 25) / 100
 
-data_spain = data[data["Country"] == "Spain"][["dt", "AverageTemperature"]]
-data_italy = data[data["Country"] == "Italy"][["dt", "AverageTemperature"]]
-
-data_spain = data_spain.rename(
-    columns={"AverageTemperature": "AverageTemperature_Spain"}
-)
-data_italy = data_italy.rename(
-    columns={"AverageTemperature": "AverageTemperature_Italy"}
-)
+[data_x, name_x] = get_data_for_country(data, country_x)
+[data_y, name_y] = get_data_for_country(data, country_y)
 
 # Merge the dataframes to have data for the same dates
-merged_data = pd.merge(data_spain, data_italy, on="dt", how="inner")
+merged_data = pd.merge(data_x, data_y, on="dt", how="inner")
 
-X = np.array(merged_data["AverageTemperature_Italy"]).reshape(-1, 1)
-y = np.array(merged_data["AverageTemperature_Spain"]).reshape(-1, 1)
+X = np.array(merged_data[name_x]).reshape(-1, 1)
+y = np.array(merged_data[name_y]).reshape(-1, 1)
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size)
 
 regr = LinearRegression()
 
@@ -66,18 +67,17 @@ regr.fit(X_train, y_train)
 regression_score = regr.score(X_test, y_test)
 st.write(f"Regression score: {regression_score}")
 
-
 y_pred = regr.predict(X_test)
 plt.scatter(X_test, y_test, color="teal", marker="o", alpha=0.5, label="Test data")
-plt.plot(X_test, y_pred, color="red", label="Predicted values")
+plt.plot(X_test, y_pred, color="red", label="Regression line")
 
 plt.title(
-    "Linear Regression of Average Temperatures: Italy vs. Spain",
+    f"Linear Regression of Average Temperatures: {country_x} vs. {country_y}",
     fontsize=12,
     weight="bold",
 )
-plt.xlabel("Average Temperature in Italy (°C)", fontsize=12)
-plt.ylabel("Average Temperature in Spain (°C)", fontsize=12)
+plt.xlabel(f"Average Temperature in {country_x} (°C)", fontsize=12)
+plt.ylabel(f"Average Temperature in {country_y} (°C)", fontsize=12)
 plt.grid(True, linestyle="--", alpha=0.6)
 # Customize the legend
 plt.legend(title="Legend", title_fontsize="13", fontsize="11", loc="upper left")
@@ -85,4 +85,3 @@ plt.legend(title="Legend", title_fontsize="13", fontsize="11", loc="upper left")
 # Hack: https://stackoverflow.com/questions/56656777/userwarning-matplotlib-is-currently-using-agg-which-is-a-non-gui-backend-so
 plt.savefig("image-results/regression.png")
 st.image("image-results/regression.png")
-# Data scatter of predicted values
