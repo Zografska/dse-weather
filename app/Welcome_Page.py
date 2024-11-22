@@ -22,6 +22,7 @@ def run():
         2. 🗺️ Traveler 
             - Visualize the path of a traveler that prefers warm weather. They usually jump to one of the closest 3 cities which has the best weather. The goal is to arrive to Los Angeles, USA 🌴, starting from Peking, China 🇨🇳
         3. 📊 Interactive Plots
+        4. 📈 Linear Regression
     """
     )
 
