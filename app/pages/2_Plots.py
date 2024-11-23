@@ -6,7 +6,7 @@ import streamlit as st
 import seaborn as sns
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
-from utils import DataHandler as dh
+from src import DataHandler as dh
 
 
 @st.cache_data
