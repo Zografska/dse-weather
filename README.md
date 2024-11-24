@@ -15,6 +15,12 @@ For visualization of the data on a map, see [pydeck](https://deckgl.readthedocs.
 ### Setup
 
 **Important**: If you want to view the map you need to first run `Traveler.py`
+To run the script for a specific day, pass down the date in yyyy-mm-dd format.
+ex. (Replace `/usr/local/bin/python3` with the location of your python installation)
+
+```sh
+/usr/local/bin/python3 ./utils/Traveler.py 2011-05-01
+```
 
 To start up the app:
 
