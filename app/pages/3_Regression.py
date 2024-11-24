@@ -20,6 +20,25 @@ def from_data_file():
     return data_handler.dataframe
 
 
+@st.cache_data
+def countries():
+    countries = from_data_file()["Country"].unique()
+    # remove continents
+    return [
+        country
+        for country in countries
+        if country
+        not in [
+            "Africa",
+            "Europe",
+            "Asia",
+            "South America",
+            "North America",
+            "Antarctica",
+        ]
+    ]
+
+
 def get_data_for_country(data, country):
     data_country = data[data["Country"] == country][["dt", "AverageTemperature"]]
     variable_name = f"AverageTemperature_{country}"
@@ -34,13 +53,13 @@ st.write(
 )
 data = from_data_file()
 
-list_of_countries = data["Country"].unique()
+list_of_countries = countries()
 
 country_x = st.sidebar.selectbox(
-    label="Select the first country", options=list_of_countries, index=110
+    label="Select the first country", options=list_of_countries, index=107
 )
 country_y = st.sidebar.selectbox(
-    label="Select the other country", options=list_of_countries, index=131
+    label="Select the other country", options=list_of_countries, index=128
 )
 
 test_size = st.sidebar.slider("Test Set Size (%)", 0, 100, 25) / 100

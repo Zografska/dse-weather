@@ -25,7 +25,21 @@ def filterdata(df, selected_date):
 
 @st.cache_data
 def countries():
-    return from_data_file()["Country"].unique()
+    countries = from_data_file()["Country"].unique()
+    # remove continents
+    return [
+        country
+        for country in countries
+        if country
+        not in [
+            "Africa",
+            "Europe",
+            "Asia",
+            "South America",
+            "North America",
+            "Antarctica",
+        ]
+    ]
 
 
 st.set_page_config(page_title="Change of Temperature over Time", page_icon="📈")
