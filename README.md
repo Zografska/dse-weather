@@ -6,7 +6,7 @@ Project for the class `Coding for Data Science and Data Management`.
 
 The dataset reports the **temperature recorded in major cities around the world since 1750**. Using this data, the project will provide an effective graphical visualization of the change in temperatures over time, highlighting the cities where the **largest temperature ranges** were recorded during different historical periods.
 
-For visualization of the data on a map, see [geopandas](https://geopandas.org/). The program will also suggest, depending on the period considered, the best route for a traveler who intends to move from **Beijing to Los Angeles**, selecting the warmest city among the 3 closest to them step by step.
+For visualization of the data on a map, see [pydeck](https://deckgl.readthedocs.io/en/latest/). The program will also suggest, depending on the period considered, the best route for a traveler who intends to move from **Beijing to Los Angeles**, selecting the warmest city among the 3 closest to them step by step.
 
 [Dataset on Kaggle](https://kaggle.com/datasets/berkeleyearth/climate-change-earth-surface-temperature-data)
 
