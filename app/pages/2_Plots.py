@@ -103,6 +103,7 @@ plt.title(
 )
 
 plt.ylabel("Average Temperature (°C)", fontsize=14)
+plt.xlabel("Period", fontsize=14)
 
 x_dates = plot_data["dt"].dt.strftime("%B %Y").sort_values().unique()
 plt.xticks(ticks=range(len(x_dates)), labels=x_dates)
